@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block content %}
+<div class="container mt-3">
+    {{ render_form(form, form_type="horizontal") }}
+</div>
+<div class="container list-group mt-3">
+    {% for code in codes %}
+        <div class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <h6>{{ code }}</h6>
+                <div class="mb-3 btn-group" role="group" aria-label="Barcode Actions">
+                    <a href="/add/purchase?ean={{ code }}" target="_blank">
+                        <button class="btn btn-outline-success">Add Price</button>
+                    </a>
+                    <a href="/add/product?ean={{ code }}" target="_blank">
+                        <button class="btn btn-outline-primary">Add Product</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

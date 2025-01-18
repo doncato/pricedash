@@ -1,0 +1,10 @@
+.content-center {
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 5em;
+}
+
+.data-dot:hover {
+    stroke: black;
+}
