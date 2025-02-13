@@ -5,9 +5,7 @@
 <div class="container mt-3">
     <form method="post">
         {{ form.csrf_token() }}
-        {{ render_field(form.ean, form_type="horizontal") }}
         {{ render_field(form.shop, form_type="horizontal") }}
-        {{ render_field(form.price, form_type="horizontal") }}
         {{ render_field(form.date, form_type="horizontal") }}
         {{ render_field(form.submit, form_type="horizontal") }}
     </form>

@@ -6,6 +6,7 @@ from flask_wtf import FlaskForm, CSRFProtect
 import os
 
 from ui.views import appview
+from ui.api import appapi
 from datahandler import db,init_units
 
 def run():
@@ -25,6 +26,7 @@ def run():
     app.secret_key = os.environ.get('SECRET_KEY') if os.environ.get('SECRET_KEY') else "development"
 
     # Register Blueprint
+    app.register_blueprint(appapi)
     app.register_blueprint(appview)
 
     # Setup SQL Access URI

@@ -1,5 +1,5 @@
 from flask import render_template,send_from_directory,Blueprint,request,redirect
-from datetime import datetime
+from datetime import datetime,timezone
 from werkzeug.utils import secure_filename
 import os
 from sqlalchemy import asc
@@ -9,7 +9,7 @@ from datahandler import \
     get_ean,get_database_stats,search_product_by_query,get_latest_prices, \
     add_alternative,get_product_pages, \
     ProductSchema,PriceSchema
-from ui.forms import ShopForm,ProductForm,PurchaseForm,ImageUploadForm
+from ui.forms import ShopForm,ProductForm,ProductPriceForm,PurchaseForm,ImageUploadForm
 from helpers.barcode import read_barcodes
 
 appview = Blueprint('appview', __name__)
@@ -26,31 +26,6 @@ def overview():
     else: 
         results = []
     return render_template("overview.html", query=query, results=results)
-
-@appview.route('/api/add/alternative/<product>/<alternative>')
-def api_add_alternative(product, alternative):
-    result = add_alternative(db, product, alternative)
-
-    return {"results": {"success": result}}
-
-@appview.route('/api/search/<query>')
-def api_search(query):
-    print(f"Searching... {query}")
-    products_schema = ProductSchema(many=True)
-    results = search_product_by_query(db, query)
-    return {"results": products_schema.dump(results)}
-    
-@appview.route('/api/prices/<ean>')
-def api_prices(ean):
-    prices_schema = PriceSchema(many=True)
-
-    product = Product.query.get(ean)
-
-    results = None
-    if product:
-        return {"results": prices_schema.dump(product.prices)}
-    else:
-        return {"results": {}}
 
 @appview.route('/add/photo', methods=['GET', 'POST'])
 def photo():
@@ -87,18 +62,39 @@ def add_purchase():
     # is not currently registered
 
     if form.validate_on_submit():
+        shop = form.shop.data.id
+        date = form.date.data
+
+        return redirect(f'/add/productprice/{shop}?date={int(date.timestamp())}', code=303)
+
+    return render_template("add_purchase.html", form=form)
+
+@appview.route('/add/productprice/<shop>', methods=['GET', 'POST'])
+def add_productprice(shop):
+    if not shop:
+        return redirect('/add/purchase', code=303)
+
+    shop_name = Shop.query.get(shop)
+
+    date = datetime.fromtimestamp(int(request.args.get('date')), tz=timezone.utc)
+    if not date:
+        date = datetime.now(tz=timezone.utc)
+
+    form = ProductPriceForm()
+
+    if form.validate_on_submit():
         price = Price()
-        price.ean = get_ean(form.ean.data)
+        price.ean = get_ean(int(form.ean.data))
         price.value = form.price.data
-        price.shop_id = form.shop.data.id
-        price.date = form.date.data
+        price.shop_id = shop
+        price.date = date
 
         db.session.add(price)
         db.session.commit()
 
-        return redirect(f'/view/product/{price.ean.ean_id}', code=303)
+        return redirect(f'/add/productprice/{shop}?date={int(date.timestamp())}', code=303)
 
-    return render_template("add_purchase.html", form=form)
+    return render_template("add_productprice.html", form=form, shop=shop_name.name, date=date.strftime("%d.%m.%Y %H:%M"))
 
 @appview.route('/add/shop', methods=['GET', 'POST'])
 def add_shop():

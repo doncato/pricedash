@@ -55,10 +55,13 @@ class ProductForm(FlaskForm):
     submit = SubmitField('Submit')
 
 class PurchaseForm(FlaskForm):
-    ean = IntegerField("EAN", validators=[DataRequired(), ean_validator, product_exists], render_kw={'class': 'productSearch'})
     shop = SelectField("Shop", validators=[DataRequired()], coerce=get_shop_by_id)
-    price = DecimalField("Price", validators=[DataRequired()])
     date = DateTimeLocalField("Time of Purchase")
+    submit = SubmitField('Next')
+
+class ProductPriceForm(FlaskForm):
+    ean = StringField("EAN", validators=[DataRequired(), ean_validator, product_exists], render_kw={'class': 'productSearch'})
+    price = DecimalField("Price", validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 class ImageUploadForm(FlaskForm):
