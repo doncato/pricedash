@@ -51,22 +51,18 @@ def add_purchase():
     form = PurchaseForm()
     form.shop.choices = [('-1', 'None')] + [(shop.id, shop.name) for shop in shops]
 
-    if request.method == 'GET' and request.args.get('ean'):
+    ean = None
+    if request.args.get('ean'):
         try:
             ean = int(request.args.get('ean'))
         except ValueError:
-            pass
-        else:
-            form.ean.data = ean
-
-    # Todo: There is currently no concept what happens when the product
-    # is not currently registered
+            ean = None
 
     if form.validate_on_submit():
         shop = form.shop.data.id
         date = form.date.data
 
-        return redirect(f'/add/productprice/{shop}?date={int(date.timestamp())}', code=303)
+        return redirect(f'/add/productprice/{shop}?date={int(date.timestamp())}&ean={ean}', code=303)
 
     return render_template("add_purchase.html", form=form)
 
