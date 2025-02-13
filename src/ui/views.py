@@ -23,6 +23,7 @@ def overview():
     query = request.args.get('q') if request.args.get('q') else ""
     if query:
         results = search_product_by_query(db, query, limit=50)
+        print(results)
     else: 
         results = []
     return render_template("overview.html", query=query, results=results)
@@ -75,12 +76,26 @@ def add_productprice(shop):
         return redirect('/add/purchase', code=303)
 
     shop_name = Shop.query.get(shop)
+    units = db.session.execute(db.select(Unit)).scalars()
+
 
     date = datetime.fromtimestamp(int(request.args.get('date')), tz=timezone.utc)
     if not date:
         date = datetime.now(tz=timezone.utc)
 
     form = ProductPriceForm()
+    productform = ProductForm()
+    photoform = ImageUploadForm()
+
+    productform.unit.choices = [(unit.name, unit.name) for unit in units]
+    
+    if request.method == 'GET' and request.args.get('ean'):
+        try:
+            ean = int(request.args.get('ean'))
+        except ValueError:
+            pass
+        else:
+            form.ean.data = ean
 
     if form.validate_on_submit():
         price = Price()
@@ -94,7 +109,33 @@ def add_productprice(shop):
 
         return redirect(f'/add/productprice/{shop}?date={int(date.timestamp())}', code=303)
 
-    return render_template("add_productprice.html", form=form, shop=shop_name.name, date=date.strftime("%d.%m.%Y %H:%M"))
+    if productform.validate_on_submit():
+        product = Product()
+        product.ean_id = productform.ean.data
+        product.name = productform.name.data
+        product.description = productform.description.data
+        product.amount = productform.amount.data
+        product.unit = productform.unit.data
+        product.image = productform.image.data
+
+        db.session.add(product)
+        db.session.commit()
+
+        return redirect(f'/add/productprice/{shop}?date={int(date.timestamp())}&ean={product.ean_id}', code=303)
+
+    if photoform.validate_on_submit():
+        data = photoform.photo.data
+        #filename = str(datetime.now().timestamp()) # File extension gets lost here
+        filename = secure_filename(data.filename)
+        path = os.path.join('public/uploads', filename)
+        data.save(path)
+        found_code = next(iter(read_barcodes(path)))
+
+        return redirect(f'/add/productprice/{shop}?date={int(date.timestamp())}&ean={found_code}', code=303)
+
+
+
+    return render_template("add_productprice.html", form=form, productform=productform, photoform=photoform, shop=shop_name.name, date=date.strftime("%d.%m.%Y %H:%M"))
 
 @appview.route('/add/shop', methods=['GET', 'POST'])
 def add_shop():
@@ -145,7 +186,7 @@ def add_product():
 
         return redirect(f'/view/product/{product.ean_id}', code=303)
 
-    return render_template("add.html", form=form)
+    return render_template("add_product.html", form=form)
 
 @appview.route('/view/product/<ean>')
 def view_product(ean):

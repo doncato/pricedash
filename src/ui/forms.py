@@ -46,7 +46,7 @@ class ShopForm(FlaskForm):
     submit = SubmitField('Submit')
 
 class ProductForm(FlaskForm):
-    ean = IntegerField("EAN", validators=[DataRequired(), ean_validator])
+    ean = IntegerField("EAN", validators=[DataRequired(), ean_validator], render_kw={'id': 'formProductEan'})
     name = StringField("Product Name", validators=[DataRequired()])
     description = StringField("Description")
     amount = DecimalField("Amount", validators=[DataRequired()])
@@ -66,4 +66,4 @@ class ProductPriceForm(FlaskForm):
 
 class ImageUploadForm(FlaskForm):
     photo = FileField(validators=[FileRequired(), FileAllowed(['jpg', 'png'], 'Unsupported Image format :(')])
-    submit = SubmitField('Submit')
+    submit = SubmitField('Upload')

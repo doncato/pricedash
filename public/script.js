@@ -69,6 +69,29 @@ function performLiveSearch(query, target) {
 
                         resultsContainer.appendChild(a);
                     });
+
+                    
+                    if (data.results.length === 0 && document.getElementById("addProduct")) {
+                        var helper = document.createElement('div');
+                        
+                        var p = document.createElement('p');
+                        p.className = 'mb-1';
+                        p.textContent = "EAN not found in Database. Submitting will most likely fail!"
+                        helper.appendChild(p);
+                        
+                        var button = document.createElement('button');
+                        button.classList = 'btn btn-outline-info';
+                        button.setAttribute("data-bs-toggle", "modal");
+                        button.setAttribute("data-bs-target", "#addProduct");
+                        button.textContent = "Add new Product";
+                        helper.appendChild(button);
+                        
+                        resultsContainer.appendChild(helper);
+
+                        if (document.getElementById("formProductEan")) {
+                            document.getElementById("formProductEan").value = query
+                        }
+                    }
                 });
         }, 200);
     } else {
@@ -183,8 +206,13 @@ if (document.getElementById('priceChart')) {
 
 if (document.getElementById('productSearch')) {
     document.getElementById('productSearch')
-        .addEventListener('keyup', function() {performLiveSearch(this.value, searchTargetProductPage)});
+        .addEventListener('input', function() {performLiveSearch(this.value, searchTargetProductPage)});
+
+    if (document.location.pathname != "/overview/") { // TODO: Improve this
+        performLiveSearch(document.getElementById('productSearch').value, searchTargetFillForm);
+    }
 } else if (document.getElementsByClassName('productSearch')) {
     document.getElementsByClassName('productSearch').item(0)
-        .addEventListener('keyup', function() {performLiveSearch(this.value, searchTargetFillForm)});
+        .addEventListener('input', function() {performLiveSearch(this.value, searchTargetFillForm)});
+    performLiveSearch(document.getElementsByClassName('productSearch').item(0).value, searchTargetFillForm);
 }

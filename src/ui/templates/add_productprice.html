@@ -4,6 +4,14 @@
 {% block content %}
 <div class="container mt-3">
     <p class="">Adding Price from {{ shop }} at {{ date }}</p>
+    <div class="mb-3 row required">
+        <div class="col-form-label col-lg-2">
+            <p>Optionally use Photo for EAN</p>
+        </div>
+        <div class="col-lg-10">
+            {{ render_form(photoform, form_type="inline") }}
+        </div>
+    </div>
     <form method="post">
         {{ form.csrf_token() }}
         {{ render_field(form.ean, form_type="horizontal") }}
@@ -18,4 +26,27 @@
     </form>
     <a class="btn btn-secondary btn-md" href="/add/purchase">Go Back</a>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="addProduct" tabindex="-1" aria-labelledby="addProductLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="addProductLabel">Add Product</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div>
+                <div class="container mt-3">
+                    {{ render_form(productform, form_type="horizontal") }}
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% endblock %}
